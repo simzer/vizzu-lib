@@ -8,37 +8,35 @@
 using namespace Vizzu;
 using namespace Vizzu::Draw;
 
-drawLegend::drawLegend(const Geom::Rect &rect,
-    const Gen::Plot &plot,
-    const Events::Draw::Legend &events,
-    Gfx::ICanvas &canvas,
+drawLegend::drawLegend(const DrawingContext &context,
     Gen::ChannelId channelType,
     double weight) :
-    plot(plot),
-    events(events),
-    canvas(canvas),
+	context(context),
+    events(context.events.legend),
+    style(context.style.legend),
+	canvas(context.canvas),
     type(channelType),
-    weight(weight),
-    style(plot.getStyle().legend)
+    weight(weight)
 {
 	contentRect =
-	    style.contentRect(rect, plot.getStyle().calculatedSize());
+	    style.contentRect(context.layout.legend, 
+	    context.style.calculatedSize());
 	itemHeight = drawLabel::getHeight(style.label, canvas);
 	titleHeight = drawLabel::getHeight(style.title, canvas);
 
-	drawBackground(rect,
+	drawBackground(context.layout.legend,
 	    canvas,
 	    style,
 	    events.background,
 	    Events::OnRectDrawParam("legend"));
 
 	if (static_cast<std::size_t>(type)
-	    < std::size(plot.axises.axises)) {
+	    < std::size(context.plot.axises.axises)) {
 		canvas.save();
 		canvas.setClipRect(contentRect);
 
-		const auto axis = plot.axises.at(type);
-		const auto dimensionAxis = plot.dimensionAxises.at(type);
+		const auto axis = context.plot.axises.at(type);
+		const auto dimensionAxis = context.plot.dimensionAxises.at(type);
 
 		if (static_cast<double>(dimensionAxis.enabled) > 0)
 			drawDimension(dimensionAxis);
@@ -129,7 +127,7 @@ void drawLegend::drawMarker(Gfx::Color color, const Geom::Rect &rect)
 	canvas.setLineColor(color);
 	canvas.setLineWidth(0);
 
-	auto radius = plot.getStyle().legend.marker.type->factor<double>(
+	auto radius = context.plot.getStyle().legend.marker.type->factor<double>(
 	                  Styles::Legend::Marker::Type::circle)
 	            * rect.size.minSize() / 2.0;
 
@@ -178,7 +176,7 @@ void drawLegend::extremaLabel(double value, int pos)
 void drawLegend::colorBar(const Geom::Rect &rect)
 {
 	canvas.setBrushGradient(rect.leftSide(),
-	    *plot.getStyle().plot.marker.colorGradient
+	    *context.plot.getStyle().plot.marker.colorGradient
 	        * (weight * enabled));
 	canvas.setLineColor(Gfx::Color::Transparent());
 	canvas.setLineWidth(0);
@@ -190,7 +188,7 @@ void drawLegend::colorBar(const Geom::Rect &rect)
 void drawLegend::lightnessBar(const Geom::Rect &rect)
 {
 	Gfx::ColorGradient gradient;
-	const auto &style = plot.getStyle().plot.marker;
+	const auto &style = context.plot.getStyle().plot.marker;
 
 	auto range = style.lightnessRange();
 	const auto &palette = *style.colorPalette;

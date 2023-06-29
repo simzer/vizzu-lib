@@ -1,11 +1,7 @@
 #ifndef CHART_RENDERING_DRAWLEGEND_H
 #define CHART_RENDERING_DRAWLEGEND_H
 
-#include "base/geom/rect.h"
-#include "base/gfx/canvas.h"
-#include "chart/generator/plot.h"
-#include "chart/main/events.h"
-#include "chart/main/style.h"
+#include "chart/rendering/drawingcontext.h"
 
 namespace Vizzu
 {
@@ -15,22 +11,19 @@ namespace Draw
 class drawLegend
 {
 public:
-	drawLegend(const Geom::Rect &rect,
-	    const Gen::Plot &plot,
-	    const Events::Draw::Legend &events,
-	    Gfx::ICanvas &canvas,
+	drawLegend(const DrawingContext &context,
 	    Gen::ChannelId channelType,
 	    double weight);
 
 private:
+	const DrawingContext &context;
 	Geom::Rect contentRect;
-	const Gen::Plot &plot;
 	const Events::Draw::Legend &events;
+	const Styles::Legend &style;
 	Gfx::ICanvas &canvas;
 	Gen::ChannelId type;
 	double weight;
 	double enabled;
-	const Styles::Legend &style;
 	double itemHeight;
 	double titleHeight;
 
